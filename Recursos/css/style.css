@@ -86,7 +86,7 @@ nav ul li a {
 	display: inline-block;
 	padding: 0 20px;
     color: #3A4043;
-    font-weight: bold;
+    // font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -123,18 +123,6 @@ h4 {
 	width: 100%;
 	padding: 16px 0;
 	background-color: #EA1D5E;
-	font-size: 14px;
-	color: #FFF;
-	border: 0;
-	outline: 0;
-	border-radius: 0 0 5px 5px;
-}
-
-.secondary-button {
-	display: block;
-	width: 100%;
-	padding: 16px 0;
-	background-color: #69e;
 	font-size: 14px;
 	color: #FFF;
 	border: 0;

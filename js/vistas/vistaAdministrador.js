@@ -8,6 +8,11 @@ var VistaAdministrador = function(modelo, controlador, elementos) {
   var contexto = this;
 
   // suscripción de observadores
+
+  this.modelo.preguntasCargadas.suscribir(function() { 
+    contexto.reconstruirLista(); 
+  });
+
   this.modelo.preguntaAgregada.suscribir(function() {
     contexto.reconstruirLista();
   });
@@ -24,23 +29,21 @@ var VistaAdministrador = function(modelo, controlador, elementos) {
     contexto.reconstruirLista(); 
   });
 
-  this.modelo.votoSumado.suscribir(function() { 
-    contexto.reconstruirLista(); 
-  });
+  
 };
-
 
 VistaAdministrador.prototype = {
   //lista
   inicializar: function() {
     //llamar a los metodos para reconstruir la lista, configurar botones y validar formularios
     validacionDeFormulario();
+    this.cargarPreguntasGuardadas();
     this.reconstruirLista();
     this.configuracionDeBotones();
+    
   },
 
   construirElementoPregunta: function(pregunta){
-    var contexto = this;
     //completar
     //asignar a nuevoitem un elemento li con clase "list-group-item", id "pregunta.id" y texto "pregunta.textoPregunta"
     var nuevoItem = $('<li></li>').addClass("list-group-item").attr('id', pregunta.id);
@@ -58,9 +61,17 @@ VistaAdministrador.prototype = {
     var lista = this.elementos.lista;
     lista.html('');
     var preguntas = this.modelo.preguntas;
-    for (var i=0;i<preguntas.length;++i){
+    for (var i=0;i< preguntas.length;++i){
       lista.append(this.construirElementoPregunta(preguntas[i]));
     }
+  },
+
+  cargarPreguntasGuardadas: function(){
+    var preguntasGuardadas = JSON.parse(localStorage.getItem('Listado Preguntas'));
+    if(preguntasGuardadas == null){
+      preguntasGuardadas = []
+    }
+    this.controlador.cargarPreguntas(preguntasGuardadas)
   },
 
   configuracionDeBotones: function(){
@@ -69,26 +80,73 @@ VistaAdministrador.prototype = {
 
     //Boton Agregar Pregunta
     e.botonAgregarPregunta.click(function() {
-      var value = e.pregunta.val();
+      var pregunta = e.pregunta.val();
       var respuestas = [];
 
       $('[name="option[]"]').each(function(index, element) {
         respuestas.push({textoRespuesta: element.value, cantidad:0})
       })
-
+     
+      
+      if(respuestas[0].textoRespuesta == ''){
+        alert('Escribi una pregunta con sus respuestas')
+        return
+      }
       contexto.limpiarFormulario();
-      contexto.controlador.agregarPregunta(value, respuestas);
+      respuestas.pop()
+      contexto.controlador.agregarPregunta(pregunta, respuestas);
     });
     
     //Editar Pregunta
     e.botonEditarPregunta.click(function(){
-      var id = parseInt($('.list-group-item.active').attr('id'));
+      var id = $('.list-group-item.active').attr('id');
       if(isNaN(id)) {
-        alert("Elegi que pregunta queres editar")
-      } else {
-        const txtPregunta = prompt('Editar pregunta', modelo.preguntas[id].textoPregunta);
-        contexto.controlador.editarPregunta(id, txtPregunta)
+          alert("Elegi que pregunta queres editar")
+          return
+      } 
+      $('#agregarPregunta').hide()
+      $('#respuesta').remove()
+      $('#guardarCambios').toggleClass('hide')
+      var keyPregunta = modelo.preguntas.findIndex(x => x.id == id)
+      var txtPregunta = modelo.preguntas[keyPregunta].textoPregunta
+      var respuestas = modelo.preguntas[keyPregunta].cantidadPorRespuesta
+      var respuestasNew = [];
+
+      // cargo txt pregunta
+      e.pregunta.val(e.pregunta.val() + txtPregunta)
+
+      // cargo txt respuesta
+     for(var i = 0; i < respuestas.length; i++){
+        var $template = $('#optionTemplate'),
+            $clone = $template
+            .clone()
+            .removeClass('hide')
+            .attr('id', i)
+            .insertBefore($template)
+            $option = $clone.find('[name="option[]"]').val(modelo.preguntas[keyPregunta].cantidadPorRespuesta[i].textoRespuesta)
       }
+
+      $('#guardarCambios').click(function() {
+        $('[name="option[]"]').each(function(index, element) {
+          var resp = modelo.preguntas[keyPregunta].cantidadPorRespuesta[index]
+          if(element.value && resp){
+            var cant = modelo.preguntas[keyPregunta].cantidadPorRespuesta[index].cantidad
+            respuestasNew.push({textoRespuesta: element.value, cantidad: cant})
+          } else {
+            respuestasNew.push({textoRespuesta: element.value, cantidad:0})
+          }
+        });
+          
+        txtPregunta = e.pregunta.val();
+        respuestasNew.pop()
+        console.log(keyPregunta, txtPregunta,respuestasNew)
+
+        $('#agregarPregunta').show()
+        $('#respuesta').remove()
+        $('#guardarCambios').addClass('hide')
+        contexto.limpiarFormulario()
+        contexto.controlador.editarPregunta(keyPregunta, txtPregunta,respuestasNew)
+      })
     });
 
     //Borrar Pregunta

@@ -6,6 +6,11 @@ var Controlador = function(modelo) {
 };
 
 Controlador.prototype = {
+
+  cargarPreguntas:function(preguntasGuardadas){
+    this.modelo.cargarPreguntas(preguntasGuardadas)
+  },
+
   agregarPregunta: function(pregunta, respuestas) {
       this.modelo.agregarPregunta(pregunta, respuestas);
   },
@@ -18,12 +23,14 @@ Controlador.prototype = {
     this.modelo.borrarTodo();
   },
 
-  editarPregunta: function(id, txtPregunta) {
-    this.modelo.editarPregunta(id, txtPregunta);
+  editarPregunta: function(keyPregunta, txtPregunta, respuestas) {
+    this.modelo.editarPregunta(keyPregunta, txtPregunta,respuestas);
   },
 
-  sumarVoto: function(idPregunta, idRespuesta) {
-    this.modelo.sumarVoto(idPregunta, idRespuesta);
+  sumarVoto: function(idPregunta, respuestaSeleccionada) {
+    console.log('en Controlador: idPregunta', idPregunta ,'respuestaSeleccionada',respuestaSeleccionada)
+    this.modelo.sumarVoto(idPregunta, respuestaSeleccionada);
   },
+
 
 };
